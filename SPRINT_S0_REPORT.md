@@ -20,3 +20,7 @@ L’[audit de réemploi](REUSE_AUDIT.md) couvre le socle stable de la station de
 Le prochain sprint approfondira le rendu Inter, la navigation et les commandes simulées. La lecture locale, la radio et la programmation du réveil restent à implémenter. Le contrôleur tactile, les niveaux électriques, les affectations GPIO individuelles, le chemin stéréo et l’interconnexion PCB restent à vérifier sur le montage Raspberry Pi 3. Tous les résultats S0 concernent le logiciel et la simulation sur le VPS. Aucun essai de qualification matérielle n’a été effectué.
 
 Le dépôt public de destination est `mattmofr/audio-station`.
+
+## Recadrage Snapcast
+
+Le chemin audio réel passe désormais par un serveur Snapcast dédié et un client local propriétaire de la sortie MiniAmp. Le socle de simulation S0 sert à préparer les adaptateurs et les comportements de groupe. L’[architecture actualisée](ARCHITECTURE.md) décrit les écarts avec la DEMO. Le [plan S0 à S11](SPRINT_PLAN.md) affecte la première qualification sur Pi à S1 et la mesure de synchronisation entre deux clients physiques ou plus à S11.

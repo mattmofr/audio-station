@@ -12,6 +12,7 @@ Ce document fixe le périmètre matériel du sprint S0 pour un lecteur musical s
 - Le bouton de veille intègre une LED.
 - Des modules capacitifs sont présents. L’un d’eux est affecté à l’arrêt du réveil.
 - Le HiFiBerry MiniAmp est le seul amplificateur. Aucun autre étage d’amplification ne doit être ajouté.
+- La sortie ALSA du MiniAmp est réservée à `snapclient`. Les producteurs audio envoient du PCM au `snapserver` dédié. Le client local s’y connecte à `127.0.0.1`.
 - Les haut-parleurs sont deux Visaton FR 8, référence 2008, un par canal, chacun de 8 Ω.
 - En numérotation BCM, GPIO 18, GPIO 19, GPIO 20, GPIO 21, GPIO 16 et GPIO 26 sont réservés au MiniAmp et ne peuvent recevoir aucune commande utilisateur.
 - Le PCB d’interconnexion se place entre l’écran, le Raspberry Pi et le MiniAmp. Tous les connecteurs des commandes sont placés en bord de PCB.
@@ -70,7 +71,7 @@ Ce plan décrit les essais à effectuer. Aucun essai ci-dessous n’est déclar�
 4. Tester SPI0 avec l’écran seul, puis caractériser le tactile après identification de son contrôleur. Vérifier que CE1 n’est utilisé que si le contrôleur le justifie.
 5. Vérifier l’absence d’attribution logicielle de GPIO 7 à GPIO 11 et de GPIO 18 à GPIO 21, GPIO 16 et GPIO 26 aux commandes.
 6. Tester l’encodeur, le poussoir, chaque bouton, la LED de veille et chaque module capacitif avec anti-rebond et états de repos documentés.
-7. Tester le MiniAmp avec les deux FR 8 raccordés séparément, commencer à faible niveau et vérifier l’absence de bruit, d’échauffement anormal ou de coupure.
+7. En S1, injecter un signal stéréo par Snapcast et tester le MiniAmp avec les deux FR 8 raccordés séparément. Commencer à faible niveau et vérifier les deux canaux, la détention exclusive du périphérique ALSA par le client et l’absence de bruit, d’échauffement anormal ou de coupure. Suivre la [procédure de qualification](docs/DEPLOYMENT.md).
 8. Vérifier le comportement d’arrêt du réveil et le comportement de veille dans les scénarios d’alimentation prévus.
 9. Consigner pour chaque essai le matériel utilisé, les mesures, la date, le résultat et les écarts au présent contrat. Une simulation ou un test sur le VPS ne constitue pas un essai matériel réel.
 

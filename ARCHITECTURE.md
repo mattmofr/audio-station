@@ -1,31 +1,54 @@
 # Architecture d’Audio Station
 
-Le programme cible un lecteur musical et radio-réveil autonome sur Raspberry Pi 3, avec une seule sortie stéréo via HiFiBerry MiniAmp. La logique applicative reçoit des commandes indépendantes de leur origine. La composition des adaptateurs est explicite au point d’entrée.
+Audio Station est un lecteur musical stéréo, un radio-réveil et un point de diffusion multiroom autonome. Le Raspberry Pi 3 héberge le `snapserver` dédié et son premier `snapclient`, configuré pour joindre le serveur à `127.0.0.1`. Ce client possède la sortie ALSA du HiFiBerry MiniAmp et alimente les deux Visaton FR 8 de 8 Ω. D’autres clients Snapcast pourront rejoindre le serveur sur le réseau local pour écouter le même flux en synchronisation.
 
-| Module | Responsabilité | Élément livré en S0 |
-| --- | --- | --- |
-| `core` | Orchestrer les commandes et exposer un état cohérent à l’interface | `Command`, `Station` et `StationState` |
-| `ui` | Transformer un état en framebuffer et, à terme, associer des zones tactiles à des commandes | Rendu Pillow RGB 320 × 240 et état de lecture, de veille ou de réveil |
-| `hardware` | Encadrer l’affectation des GPIO et héberger les futurs adaptateurs pour écran, tactile et commandes | Réservations BCM et validation pure des propositions de GPIO |
-| `audio` | Définir le contrat de lecture et fournir ses implémentations | Protocole `Playback`, instantané `PlaybackState`, lecteur en mémoire |
-| `alarms` | Gérer le cycle de vie du réveil et ses futures règles de déclenchement | État `Alarm` déclenché par le scénario et arrêt idempotent |
-| `infrastructure` | Charger la configuration et assembler les dépendances | Config TOML validée et scénario déterministe |
+## Circulation de l’audio
 
 ```mermaid
 flowchart LR
-  entry["Point d’entrée CLI"] --> assembly["infrastructure · configuration et DEMO"]
-  assembly --> hardware["hardware · règles GPIO"]
-  assembly --> core["core · Station"]
-  core --> audio["audio · contrat Playback"]
-  core --> alarm["alarms · état du réveil"]
-  core --> state["Instantané StationState"]
-  state --> ui["ui · rendu Pillow"]
+  music["Radio Internet ou fichier local"] --> decoder["Décodage PCM"] --> musicStream["Music"]
+  spotify["go-librespot · pipe ou processus PCM"] --> spotifyStream["Spotify"]
+  alarm["Sonnerie locale PCM"] --> alarmStream["Alarm"]
+  musicStream --> server["snapserver · Raspberry Pi 3"]
+  spotifyStream --> server
+  alarmStream --> server
+  server --> local["snapclient local · 127.0.0.1"]
+  server --> peers["snapclients LAN · flux de groupe synchronisé"]
+  local --> amp["ALSA · HiFiBerry MiniAmp"]
+  amp --> speakers["Deux Visaton FR 8"]
+  ui["TFT Multiroom · commandes · réveil"] -. "JSON-RPC local" .-> server
 ```
 
-`Station.handle` reçoit une commande à la fois. `Station.snapshot` construit un instantané immuable. Le rendu reçoit cet instantané directement, sans accès à l’audio ou aux GPIO. Les futurs adaptateurs du tactile, des boutons et de l’encodeur convergeront vers les mêmes commandes. Les politiques propres à la DEMO sont bornées au scénario : pause en entrant en veille, réveil déclenché explicitement et arrêt possible pendant la veille.
+`snapclient` est l’unique utilisateur de la carte ALSA HiFiBerry en fonctionnement normal. Les producteurs alimentent les entrées de `snapserver` avec du PCM. Chaque groupe reçoit un flux, et `Alarm` est réservé par défaut au groupe isolé du client local. Le serveur reste fonctionnel sur la boucle locale pour les fichiers et sonneries présents sur le Pi, y compris quand Internet est indisponible. Radio Internet et Spotify dépendent de leurs services distants.
 
-Le mode DEMO assemble uniquement des objets Python en mémoire. Ses seules entrées et sorties explicites sont la trace dans le terminal, le fichier TOML optionnel et le PNG demandé avec `--output`. Le validateur de GPIO contrôle les réservations MiniAmp, les lignes de la route SPI0 candidate et l’unicité des affectations directes. L’exemple S0 laisse les GPIO individuels à confirmer.
+| Flux | Producteur | Contrat PCM à qualifier sur le Pi |
+| --- | --- | --- |
+| `Music` | Décodeur des radios et fichiers locaux | 48 000 Hz, 16 bits signés little-endian, stéréo entrelacée |
+| `Spotify` | go-librespot via FIFO ou via processus qui fournit le PCM sur sa sortie standard | 44 100 Hz candidat, 16 bits signés little-endian, stéréo entrelacée. Vérifier les octets de la version retenue. |
+| `Alarm` | Sonnerie locale décodée vers une entrée distincte | 48 000 Hz, 16 bits signés little-endian, stéréo entrelacée |
 
-Le futur chemin audio reçoit des médias locaux et des flux radio, les décode puis les dirige vers une sortie stéréo locale. Le choix du moteur de lecture et le routage vers le périphérique ALSA seront validés sur le Pi lors des sprints concernés. Le réveil utilisera une horloge injectable et une sonnerie locale de secours. Les interfaces seront étendues quand ces usages seront implémentés.
+Snapcast reçoit un format fixe par source. Le signal réellement produit et celui accepté par le périphérique ALSA seront vérifiés séparément. Le détail de la commande, du routage du réveil et de la qualification se trouve dans le [contrat Snapcast](docs/SNAPCAST_ARCHITECTURE.md). [Configuration officielle de Snapcast](https://github.com/snapcast/snapcast/blob/develop/doc/configuration.md#sources), [Schéma officiel de go-librespot](https://github.com/devgianlu/go-librespot/blob/master/config_schema.json)
 
-Le rendu S0 utilise la police embarquée de Pillow. Le gabarit Inter et la prévisualisation interactive sont planifiés dans S1. Le [contrat matériel](HARDWARE_CONTRACT.md) encadre la transition du framebuffer simulé vers le TFT.
+## Contrôle et modules
+
+| Module | Responsabilité cible | Socle S0 |
+| --- | --- | --- |
+| `core` | Traiter les commandes, distinguer les actions locales des actions partagées et publier des instantanés confirmés | `Command`, `Station` et `StationState` |
+| `ui` | Rendre le TFT, dont la vue Multiroom, les clients présents, leurs groupes, leurs flux et les volumes | Framebuffer Pillow RGB 320 × 240 et états lecture, veille, réveil |
+| `hardware` | Convertir tactile, GPIO et encodeur en commandes. L’encodeur cible le volume du client local. | Validation pure des réservations BCM |
+| `audio` | Produire et vérifier le PCM. Définir les contrats de lecture et de gestion Snapcast. | `Playback`, `PlaybackState` et lecteur en mémoire |
+| `alarms` | Programmer et jouer la sonnerie locale, isoler la sortie, vérifier puis restaurer le routage | Drapeau de réveil déclenché et arrêté dans le scénario |
+| `infrastructure` | Charger les profils et adapter le transport JSON-RPC, les producteurs PCM et leurs cycles de vie | Configuration TOML et assemblage de la DEMO |
+
+L’adaptateur utilise l’API JSON-RPC officielle. Il recense les clients à partir de `Server.GetStatus`, suit les notifications et resynchronise son état après une reconnexion. Il gère les membres, les flux et le mute des groupes. Le volume d’un groupe est une opération d’Audio Station qui applique `Client.SetVolume` à chacun de ses membres et confirme les résultats. L’encodeur agit sur le client local identifié par configuration. [API de contrôle Snapcast](https://github.com/snapcast/snapcast/blob/develop/doc/json_rpc_api/control.md)
+
+Le réveil mémorise le routage utile avant d’isoler le client local. Il alimente `Alarm` après confirmation de l’isolement et préserve la lecture des autres clients. L’arrêt coupe d’abord le PCM. La reprise du groupe initial dépend ensuite de l’état confirmé et des changements survenus depuis l’isolement. Un rétablissement incertain est signalé dans l’interface et laisse la sonnerie à l’arrêt.
+
+## Effet sur le socle S0
+
+- Le lecteur en mémoire, la DEMO hors ligne et le rendu Pillow restent les outils de développement. La sortie ALSA appartient au `snapclient` dans le chemin réel. Le futur décodeur est une source PCM de `Music`.
+- Le volume simulé de `PlaybackState` doit être complété par un modèle des clients et groupes confirmé par le serveur. Une rotation d’encodeur cible le client local. La veille locale doit préserver l’écoute des autres clients. Aucun ordre de veille ne doit arrêter automatiquement une source partagée.
+- Le drapeau de réveil de S0 ne couvre que l’affichage de la DEMO. Le réveil réel exige une machine d’état pour l’isolement, la coupure et la restauration après incident.
+- La configuration TOML de la DEMO reste sans service ni accès réseau. Les profils réels devront identifier explicitement le serveur et le client local. Le premier essai matériel passe par Snapcast en S1. S11 mesure la synchronisation de deux clients physiques ou plus.
+
+Le VPS reste dédié au développement et aux simulations. Les ports Snapcast sont limités à la boucle locale ou au réseau local autorisé. L’instance est dédiée à Audio Station. Toute installation de service ou modification système nécessite l’accord explicite de l’utilisateur. Voir le [plan de sprints](SPRINT_PLAN.md), le [contrat matériel](HARDWARE_CONTRACT.md) et la [procédure de déploiement](docs/DEPLOYMENT.md).

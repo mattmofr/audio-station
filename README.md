@@ -1,6 +1,6 @@
 # Audio Station
 
-Audio Station est un projet de lecteur musical stéréo et radio-réveil autonome pour Raspberry Pi 3. Le sprint S0 livre un socle Python et un scénario DEMO hors ligne.
+Audio Station est un projet de lecteur musical stéréo et radio-réveil autonome pour Raspberry Pi 3. Le Pi hébergera un serveur Snapcast dédié et son premier client, seul à ouvrir la sortie ALSA du HiFiBerry MiniAmp. Le sprint S0 livre un socle Python et un scénario DEMO hors ligne.
 
 ## Démarrer
 
@@ -25,8 +25,12 @@ Le backend audio de S0 conserve ses états en mémoire. Le scénario déclenche 
 ## Documentation
 
 - [Architecture](ARCHITECTURE.md)
+- [Contrat Snapcast](docs/SNAPCAST_ARCHITECTURE.md)
+- [Procédure de déploiement et de qualification](docs/DEPLOYMENT.md)
 - [Contrat matériel](HARDWARE_CONTRACT.md)
 - [Audit de réemploi](REUSE_AUDIT.md)
-- [Plan de sprints](SPRINT_PLAN.md)
+- [Backlog](BACKLOG.md)
+- [Plan S0 à S11](SPRINT_PLAN.md)
+- [Prompts de sprint](docs/SPRINT_PROMPTS.md)
 - [Compte rendu du sprint S0](SPRINT_S0_REPORT.md)
 - [Instructions de travail](AGENTS.md)
