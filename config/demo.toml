@@ -1,0 +1,5 @@
+[playback]
+volume = 35
+
+# Brochage à confirmer sur l’équipement réel.
+[hardware.control_pins]

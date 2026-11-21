@@ -36,3 +36,5 @@ Développer un lecteur musical stéréo et radio-réveil autonome sur Raspberry 
 
 - Travailler sprint par sprint, sur une branche indépendante pour chacun.
 - Pour chaque sprint, produire les tests, la documentation et un compte rendu qui précise les changements, les vérifications effectuées et les points encore ouverts.
+- Exécuter les tests ordinaires depuis l’environnement Python local, avec des entrées et sorties simulées.
+- Soumettre la création du dépôt GitHub à l’utilisateur avant toute publication.
