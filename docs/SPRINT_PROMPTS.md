@@ -6,32 +6,32 @@ Ce document contient douze prompts lançables, de S0 à S11. Chaque sprint est r
 
 Tu travailles uniquement dans le dépôt Audio Station et dans le périmètre explicitement autorisé. Les services dédiés au sprint sont isolés des autres services et projets. N’installe aucun service et ne modifie aucune configuration système sans autorisation explicite préalable. Le VPS sert au développement et aux simulations. Le Raspberry Pi 3 sert à la qualification matérielle. N’ouvre aucun port vers le WAN. Les essais réseau restent limités au LAN de développement ou à un réseau de qualification contrôlé.
 
-Le Raspberry Pi 3 héberge le `snapserver` dédié et le premier `snapclient`, connecté à `127.0.0.1`. Le client possède seul la sortie ALSA du MiniAmp. Les producteurs écrivent du PCM vers `Music`, `Spotify` et `Alarm`. Le contrôle utilise l’API JSON-RPC officielle et le streaming LAN permet l’écoute synchronisée. Suis le [contrat Snapcast](SNAPCAST_ARCHITECTURE.md), le [plan de sprints](../SPRINT_PLAN.md) et la [procédure de déploiement](DEPLOYMENT.md).
+Le Raspberry Pi 3 héberge le `snapserver` dédié et le premier `snapclient`, connecté à `127.0.0.1`. Le client possède seul la sortie ALSA du MiniAmp. Les producteurs écrivent du PCM vers `Music`, `Spotify` et `Alarm`. Le contrôle utilise l’API JSON-RPC officielle et le streaming LAN permet l’écoute synchronisée. Suis le [contrat Snapcast](SNAPCAST_ARCHITECTURE.md), le [plan de sprints](SPRINTS.md) et la [procédure de déploiement](DEPLOYMENT.md).
 
 Pour chaque sprint, commence par créer ou utiliser la branche indépendante demandée. Lis les fichiers concernés avant modification. Travaille avec des interfaces simulables sur le VPS et documente clairement les limites de la simulation. Toute commande qui nécessiterait une installation, un service, une règle réseau ou une modification système doit être préparée comme proposition et soumise à autorisation. Termine par les tests appropriés, un compte rendu des changements et des points ouverts.
 
 Vérifie du PCM S16LE stéréo à 48 kHz pour Music et Alarm, et à 44,1 kHz pour Spotify si la capture de la version retenue le confirme. Toute conversion doit être mesurée et documentée. Les critères de sortie distinguent preuve logicielle, simulation VPS et essai sur Raspberry Pi 3.
 
-## S0 — recadrage architecture et démo conservée
+## S0 — socle v2, audit et simulation
 
 ### Objectif
 
-Fixer l’architecture Audio Station autour de Snapcast, préserver la démonstration existante et établir un contrat de travail vérifiable pour les sprints suivants.
+Prépare un socle testable et indépendant autour de Snapcast. Si le répertoire existe déjà, crée une branche propre et conserve le travail validé.
 
 ### Action
 
-Cartographier l’existant et les interfaces de la démo. Décrire les rôles de `snapserver`, du `snapclient` loopback, du pipeline PCM, de l’ALSA exclusive MiniAmp et des trois sources Music, Spotify et Alarm. Établir les frontières VPS simulation et Pi qualification. Identifier les hypothèses de format et les décisions qui exigent une preuve. Ne supprimer ni contourner la démo existante.
+Audite la référence en lecture seule, y compris les règles, l’architecture, les GPIO, le tactile, le navigateur, l’audio et les tests. Distingue les abstractions utiles, la DEMO et les essais physiques. Vérifie les droits avant toute copie. Prépare les packages sous `src/audio_station`, la configuration, `hardware/kicad` et la CI locale. Décris l’instance Snapcast dédiée, la sortie MiniAmp exclusive et la répartition des preuves entre VPS et Pi.
 
 ### Validation
 
-La démo existante reste exécutable ou son mode de lancement est documenté. Le schéma de flux ne contient aucun service non autorisé, aucun port WAN et aucun accès audio concurrent. Chaque hypothèse indique sa méthode de preuve et sa qualification attendue.
+Exécute la DEMO sans réseau ni GPIO et la CI locale. Ajoute un test d’architecture contre les accès ALSA des producteurs Python et un cas valide pour le lancement externe de `snapclient`. Confirme les liens entre le backlog et les jalons S1 et S11.
 
 ### Livrables
 
-- Contrat d’architecture et diagramme de flux
-- Inventaire des composants et des interfaces
-- Matrice simulation VPS, qualification Pi 3 et éléments non encore prouvés
-- Compte rendu S0 avec démo conservée et points ouverts
+- Arborescence, CI locale et DEMO
+- Spécification v2, architecture et contrats matériel et Snapcast
+- Audit de réemploi, backlog, plan de sprints et tests
+- Compte rendu S0 avec options, résultats et points ouverts
 
 ## S1 — premier client Pi réel et stéréo loopback exclusive
 

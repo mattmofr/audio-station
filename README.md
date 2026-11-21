@@ -12,25 +12,27 @@ python3 -m venv .venv
 .venv/bin/python -m audio_station demo --config config/demo.toml --output .demo/frame.png
 ```
 
-L’installation des dépendances peut utiliser l’index Python configuré. La DEMO et les tests s’exécutent ensuite hors ligne. La commande affiche la trace d’une lecture simulée, du passage en veille, du déclenchement du réveil et de son arrêt. L’option `--output` enregistre le dernier écran au format PNG RGB 320 × 240. Sans cette option, la trace reste dans le terminal. Sans `--config`, la DEMO utilise les valeurs intégrées. La même commande est disponible sous `.venv/bin/audio-station demo`.
+L’installation des dépendances peut utiliser l’index Python configuré. La commande `demo` est le mode de simulation sans réseau ni GPIO. Elle affiche la trace d’une lecture simulée, du passage en veille, du déclenchement du réveil et de son arrêt. L’option `--output` enregistre le dernier écran au format PNG RGB 320 × 240. Sans cette option, la trace reste dans le terminal. Sans `--config`, la DEMO utilise les valeurs intégrées. La même commande est disponible sous `.venv/bin/audio-station demo`.
 
-Dans `config/demo.toml`, `playback.volume` fixe le volume initial simulé. La table `hardware.control_pins` permet de vérifier une proposition d’affectation BCM. Elle est vide dans l’exemple et n’établit aucune connexion matérielle.
+Dans `config/demo.toml`, `playback.volume` fixe le volume initial simulé. La table `hardware.control_pins` permet de vérifier une proposition d’affectation BCM. Elle est vide dans l’exemple. Les profils propres à une machine peuvent être conservés dans `config/local/`, ignoré par Git.
 
 ```bash
-.venv/bin/python -m unittest discover -s tests -v
+./tools/ci.sh
 ```
 
-Le backend audio de S0 conserve ses états en mémoire. Le scénario déclenche le réveil à un point fixe. La lecture de fichiers et de flux radio, la planification du réveil et l’accès au matériel relèvent des sprints suivants.
+La CI locale contrôle les dépendances et lance les tests, dont la garde de simulation et celle contre les sorties ALSA directes. Le backend audio de S0 conserve ses états en mémoire. Le scénario déclenche le réveil à un point fixe. La lecture de fichiers et de flux radio, la planification du réveil et l’accès au matériel relèvent des sprints suivants.
 
 ## Documentation
 
-- [Architecture](ARCHITECTURE.md)
+- [Spécification produit v2](docs/PRODUCT_SPEC.md)
+- [Architecture](docs/ARCHITECTURE.md)
 - [Contrat Snapcast](docs/SNAPCAST_ARCHITECTURE.md)
 - [Procédure de déploiement et de qualification](docs/DEPLOYMENT.md)
-- [Contrat matériel](HARDWARE_CONTRACT.md)
+- [Contrat matériel](docs/HARDWARE_CONTRACT.md)
+- [Préparation KiCad](hardware/kicad/README.md)
 - [Audit de réemploi](REUSE_AUDIT.md)
 - [Backlog](BACKLOG.md)
-- [Plan S0 à S11](SPRINT_PLAN.md)
+- [Plan S0 à S11](docs/SPRINTS.md)
 - [Prompts de sprint](docs/SPRINT_PROMPTS.md)
 - [Compte rendu du sprint S0](SPRINT_S0_REPORT.md)
 - [Instructions de travail](AGENTS.md)

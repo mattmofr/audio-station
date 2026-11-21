@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "audio-station"
 version = "0.1.0"
-description = "Lecteur musical stéréo et radio-réveil pour Raspberry Pi 3"
+description = "Lecteur stéréo, radio-réveil et station multiroom Snapcast pour Raspberry Pi 3"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = ["Pillow==12.2.0"]
@@ -15,3 +15,4 @@ audio-station = "audio_station.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["audio_station", "audio_station.*"]

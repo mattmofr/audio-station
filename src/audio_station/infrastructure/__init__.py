@@ -1,1 +1,1 @@
-"""Configuration et assemblage du programme."""
+"""Compatibilité avec les imports du premier socle S0."""

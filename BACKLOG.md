@@ -4,7 +4,7 @@ Les éléments ci-dessous sont obligatoires pour l’architecture cible. L’ava
 
 | ID | Travail | Critère d’acceptation | Sprint |
 | --- | --- | --- | --- |
-| B01 | Socle et contrat Snapcast | DEMO hors ligne, module de lecture simulé, architecture, plan, prompts et procédure disponibles | S0 |
+| B01 | Socle et contrat Snapcast | DEMO sans réseau ni GPIO, CI locale, test d’architecture contre les sorties ALSA directes, spécification, plan, prompts et procédure disponibles | S0 |
 | B02 | Serveur et premier client sur Pi 3 | `snapserver` dédié, client local identifié à `127.0.0.1`, route exclusive MiniAmp, stéréo et reprise locale prouvées sur le montage | S1 |
 | B03 | Découverte et suivi des clients | Inventaire JSON-RPC, connexion, déconnexion et état incertain visibles. Un nouvel instantané réconcilie le modèle à la reconnexion. | S2 |
 | B04 | Groupes et flux | Affecter les membres et le flux à partir de l’état confirmé. Relire l’état après modification et interrompre une commande ciblant un objet périmé. | S2 |

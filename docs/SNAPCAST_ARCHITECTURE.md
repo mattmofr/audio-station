@@ -59,6 +59,8 @@ Le comportement de détachement est vérifié sur la version retenue. L’amont 
 
 ## Limites et qualification
 
+La CI S0 cherche les accès ALSA directs dans le code Python. La supervision du binaire externe `snapclient` est compatible avec la frontière. L’exclusivité réelle se vérifie en identifiant le processus qui détient le périphérique en S1. [Test d’architecture](../tests/test_audio_architecture.py)
+
 S1 qualifie uniquement Music sur le Pi 3, en stéréo locale, avec reconnexion et exclusivité ALSA du MiniAmp. Le test doit vérifier le format effectivement négocié par ALSA, le nombre d’octets par trame, la cadence sur un signal et une durée connus, la séparation gauche/droite et l’absence d’un second ouvreur ALSA.
 
 S3 qualifie le PCM des producteurs radio et fichiers de `Music`. Il vérifie les octets par trame, la cadence mesurée sur une durée connue, les canaux gauche et droit avec signaux distincts, l’absence d’en-tête et le format reçu par snapserver. Les écritures partielles sont prises en compte dans la preuve.

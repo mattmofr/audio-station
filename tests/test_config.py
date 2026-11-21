@@ -2,10 +2,17 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from audio_station.infrastructure.config import Config, ConfigError, load_config
+from audio_station.infra.config import Config, ConfigError, load_config
 
 
 class ConfigTests(unittest.TestCase):
+    def test_original_config_import_remains_compatible(self):
+        from audio_station.infrastructure import config
+
+        self.assertIs(config.Config, Config)
+        self.assertIs(config.ConfigError, ConfigError)
+        self.assertIs(config.load_config, load_config)
+
     def load_text(self, content: str) -> Config:
         with TemporaryDirectory() as directory:
             path = Path(directory) / "test.toml"

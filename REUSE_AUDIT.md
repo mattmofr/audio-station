@@ -1,23 +1,28 @@
-# Audit de réemploi
+# Audit de réemploi — S0 v2
 
-L’audit S0 s’appuie sur la consultation en lecture seule du socle stable et d’un prototype radio du projet privé de référence. Graphify a indexé un instantané temporaire en mode code uniquement. Les conclusions reposent sur la lecture des sources et de leurs rapports de validation.
+Le projet privé de référence a été consulté en lecture seule. L’analyse Graphify a porté sur une archive Git temporaire limitée au code, avec relecture des sources et des rapports. Les noms d’instances, adresses, identifiants et chemins propres à la référence restent hors de cet audit public.
 
-| Domaine | Constat dans le projet de référence | Décision pour Audio Station |
+## Décisions de réemploi
+
+| Périmètre vérifié | Preuve et limite | Décision Audio Station |
 | --- | --- | --- |
-| Architecture générale | Les interfaces desktop et web utilisent une session logique commune. Celle-ci relie l’état, le rendu et le traitement des commandes. | Reprendre cette séparation. Développer le modèle de lecture stéréo, le réveil et les écrans propres à Audio Station. |
-| Rendu Pillow et Inter | Pillow produit un framebuffer RGB 320 × 240. Les primitives de dessin et l’accès à Inter sont centralisés. La provenance de la police est documentée avec sa licence OFL 1.1. | Garder un rendu natif testable par états. Créer les écrans d’Audio Station. Intégrer Inter en S5 avec sa licence et sa provenance. Le rendu S0 utilise la police de Pillow. |
-| Simulateur web | La session publie des PNG et sérialise les commandes dans une file bornée. Le navigateur convertit les événements du pointeur en coordonnées 320 × 240. Le serveur contrôle les entrées, leur origine et les mutations. | Garder l’idée d’une session partagée, d’un framebuffer unique et de commandes injectées. Adapter les contrôles au produit. La prévisualisation web relève du développement. |
-| Tactile et GPIO | L’acquisition, la calibration, la détection des gestes, l’anti-rebond, la quadrature et la distribution sont distincts. Un transport SPI partagé modélise la sélection des périphériques et le transfert RGB565. Le profil matériel stable est simulé. | Reprendre la séparation et les cas de test avec horloge et transport injectés. Identifier le contrôleur réel avant de développer l’adaptateur, la calibration et la table GPIO. |
-| Audio et sources | Le socle stable simule les capacités des sources et la file de lecture. Un transport Snapcast optionnel permet de traiter le volume et le mute en multiroom. | Reprendre l’interface d’adaptateur, les instantanés d’état et les tests injectés. Faire de Snapcast le chemin audio obligatoire d’Audio Station, avec un serveur dédié et son premier client sur le Pi. |
-| Configuration | Des profils TOML distincts bornent les valeurs et différencient présence, activation et confirmation du matériel. Les secrets sont séparés des fichiers d’exemple. | Garder TOML, les défauts sûrs et la validation stricte. Écrire un schéma Audio Station. Le profil S0 valide une proposition de GPIO sans activer de matériel. |
-| Tests et qualification | Les tests couvrent le rendu, les entrées, le serveur web et les transports injectés. Les smoke tests réseau utilisent des serveurs loopback éphémères. Les rapports distinguent simulations, essais logiciels et essais physiques. | Reprendre les fixtures contrôlées et la distinction des preuves. Développer un protocole de banc pour le TFT, les commandes et les deux canaux du MiniAmp. |
+| Architecture et règles de travail | La session de simulation assemble séparément état, commandes, rendu et adaptateurs. Les règles et profils de la référence isolent les services historiques. | Reprendre les frontières et les défauts sûrs dans le dépôt indépendant. Rédiger la configuration et le démarrage propres à Audio Station. |
+| UI Pillow et Inter | Le rendu et ses tests génèrent des images RGB 320 × 240. Une couche de dessin centralise la police, les mises en page et les caches. | Réimplémenter les écrans et leurs tests. Intégrer Inter en S5 depuis l’amont avec licence et provenance. |
+| Tactile et GPIO | La chaîne sépare l’échantillonnage, les gestes, la distribution puis le routage des commandes. Les transports SPI et les séquences de rebond se testent par injection. Les mappings et conflits sont des observations ou propositions pour la référence. | Reprendre le découpage et les scénarios. Établir le brochage, les niveaux, les polarités et la calibration sur Audio Station. |
+| Simulateur navigateur | Le navigateur et la simulation locale partagent la session et le framebuffer. Les tests du serveur portent sur HTTP, commandes et conversion des coordonnées. | Réimplémenter les adaptations utiles à un outil de développement. Les preuves de rendu et d’entrées physiques relèvent de tests séparés. |
+| API Snapcast | La référence démontre la corrélation des réponses JSON-RPC, la gestion du flux NDJSON, les notifications, la resynchronisation, les temps d’attente et le volume par client sur un serveur de test à boucle locale. | Réimplémenter ce contrat injectable avec l’API officielle. Audio Station doit gérer ses propres clients, groupes, flux et volumes sur son serveur dédié. |
+| Producteurs audio | Le socle stable simule la lecture et les métadonnées. Le prototype radio démontre la séparation entre décodeur PCM, états du lecteur et transport vers Snapcast. | Reprendre ces responsabilités, puis vérifier les formats et le traitement des reprises selon le [plan de sprints](docs/SPRINTS.md). |
 
-## Prototype radio et matériel
+## DEMO, matériel et dépendances exclues
 
-- Le prototype sépare les stations, les favoris SQLite et les tâches de recherche, de décodage et d’illustration. Ces responsabilités et leurs cas de test sont transférables à S3.
-- Le décodeur radio utilise FFmpeg et émet du PCM stéréo. Le transport du prototype dirige ce PCM vers une écoute TCP locale pour Snapcast. Audio Station doit produire le PCM de `Music` et qualifier le volume et l’écoute stéréo via le `snapclient` local et le MiniAmp.
-- Le backend Raspberry Pi de référence cible un autre écran. Sa méthode de diagnostic tactile, de collecte de mesures et d’endurance peut être adaptée après l’identification du module d’Audio Station. Les résultats de la référence ne qualifient pas le nouvel assemblage.
+Les écrans, la file de lecture et une partie des intégrations audio de la référence restent des simulations. Les essais historiques Tk, HTTP, tactiles injectés et Snapcast sur serveur de test démontrent des comportements logiciels. Leur couverture ne qualifie ni le nouvel écran ni le chemin stéréo MiniAmp. Le TFT, son contrôleur tactile, le SPI, le câblage et les sorties audio sont à vérifier sur le Pi d’Audio Station.
 
-## Réemploi retenu
+Les unités de service, scripts de démarrage, accès aux anciens GPIO, périphériques ALSA, profils réseau et instances audio des autres projets sont exclus. **Snapcast est une dépendance fonctionnelle du nouveau produit**. Audio Station possède son `snapserver` et son premier `snapclient` sur le Pi. Le client local à `127.0.0.1` est l’unique propriétaire de la sortie ALSA du MiniAmp en production. La référence a servi à l’observation du protocole et de ses frontières, sans connexion à ses services.
 
-S0 transpose le framebuffer, les commandes indépendantes de leur origine, l’injection des dépendances et la validation hors ligne. Le code et les tests sont propres à Audio Station. Une reprise directe de code privé dépend de ses droits d’usage et de publication. La licence et la provenance d’Inter seront conservées lors de son intégration.
+## Options retenues et licences
+
+- Réécrire les seules abstractions utiles. La documentation de référence indique que la licence de son code et ses droits de publication restent à définir. Les sources, tests, configurations et visuels d’origine restent dans la référence.
+- Séparer la police Inter des autres assets. Elle pourra être intégrée depuis sa distribution officielle sous SIL OFL 1.1, avec son fichier de licence et sa provenance. Le rendu S0 utilise la police fournie par Pillow. [Licence officielle Inter](https://github.com/rsms/inter/blob/master/LICENSE.txt)
+- Démarrer S1 avec un serveur et un client dédiés sur la boucle locale, puis réserver le pilotage applicatif à S2 et la qualification multiroom à S11. Le chemin Spotify cible une FIFO, avec un processus qui émet du PCM sur stdout comme variante à qualifier. [Contrat Snapcast](docs/SNAPCAST_ARCHITECTURE.md)
+
+Les dossiers et preuves consultés couvrent `AGENTS.md`, `ARCHITECTURE.md`, `HARDWARE_MAPPING.md`, `GPIO_CONFLICTS.md`, `AUDIO_ARCHITECTURE.md`, `ASSET_LICENSES.md`, les guides du simulateur navigateur, les modules UI et tactile, les tests et les comptes rendus.

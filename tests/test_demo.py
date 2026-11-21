@@ -7,15 +7,20 @@ from tempfile import TemporaryDirectory
 from PIL import Image
 
 DEMO_WITH_IO_GUARD = """
+import os
 import runpy
 import sys
 
 
 def forbid_io(event, args):
-    if event.startswith("socket.") or event in {"subprocess.Popen", "os.system"}:
+    if event.startswith("socket.") or event in {
+        "subprocess.Popen", "os.system", "os.exec", "os.posix_spawn", "os.fork",
+    }:
         raise AssertionError(f"Unexpected external I/O: {event}")
-    if event == "open" and isinstance(args[0], str) and args[0].startswith("/dev/"):
-        raise AssertionError(f"Unexpected device I/O: {args[0]}")
+    if event == "open" and isinstance(args[0], (str, bytes)):
+        path = os.path.realpath(os.fsdecode(args[0]))
+        if path.startswith(("/dev/", "/sys/class/gpio/", "/sys/devices/platform/")):
+            raise AssertionError(f"Unexpected device I/O: {path}")
 
 
 sys.addaudithook(forbid_io)

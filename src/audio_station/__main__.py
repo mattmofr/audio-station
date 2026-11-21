@@ -2,8 +2,8 @@ import argparse
 from pathlib import Path
 from typing import Sequence
 
-from audio_station.infrastructure.config import Config, ConfigError, load_config
-from audio_station.infrastructure.demo import run_demo
+from audio_station.infra.config import Config, ConfigError, load_config
+from audio_station.infra.demo import run_demo
 from audio_station.ui.display import render_demo, status_text
 
 
