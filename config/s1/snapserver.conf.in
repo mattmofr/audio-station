@@ -1,0 +1,25 @@
+# Profil S1 pour les versions avec [tcp-control] et [tcp-streaming].
+[server]
+datadir = @RUN_DIR@/state
+mdns_enabled = false
+
+[http]
+enabled = false
+ssl_enabled = false
+
+[tcp-control]
+enabled = true
+bind_to_address = 127.0.0.1
+port = 17105
+
+[tcp-streaming]
+enabled = true
+bind_to_address = 127.0.0.1
+port = 17104
+
+[stream]
+source = pipe://@RUN_DIR@/music.fifo?name=Music&mode=read&sampleformat=48000:16:2&codec=pcm
+buffer = 1000
+
+[streaming_client]
+initial_volume = 5

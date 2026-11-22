@@ -29,6 +29,7 @@ La CI locale contrôle les dépendances et lance les tests, dont la garde de sim
 - [Contrat Snapcast](docs/SNAPCAST_ARCHITECTURE.md)
 - [Procédure de déploiement et de qualification](docs/DEPLOYMENT.md)
 - [Contrat matériel](docs/HARDWARE_CONTRACT.md)
+- [Qualification audio S1](docs/AUDIO_HAT_QUALIFICATION.md)
 - [Préparation KiCad](hardware/kicad/README.md)
 - [Audit de réemploi](REUSE_AUDIT.md)
 - [Backlog](BACKLOG.md)

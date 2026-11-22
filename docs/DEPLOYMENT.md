@@ -52,6 +52,8 @@ audio_output_pipe_wait_for_reader: true
 
 ## Démarrer et qualifier le premier client en S1
 
+Le [banc S1 MiniAmp](../config/s1/README.md) fournit les gabarits et commandes reproductibles avec des ports de test dédiés. Consigner le verdict dans la [qualification audio S1](AUDIO_HAT_QUALIFICATION.md).
+
 1. Sous autorisation, démarrer les deux processus dédiés au premier plan avec un état isolé, sans lancer d’instance en double. Remplacer les variables du gabarit par les valeurs relevées sur le Pi. Choisir un PCM ALSA direct du MiniAmp, de forme `hw:CARD=…,DEV=…`. Utiliser `--hostID` si la version le supporte et vérifier l’identité effective dans `Server.GetStatus`. Les versions antérieures peuvent documenter `--host` à la place de l’URI. [Options du client Snapcast](https://github.com/snapcast/snapcast/blob/develop/client/snapclient.cpp#L147)
 
    ```sh

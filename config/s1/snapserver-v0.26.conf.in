@@ -1,0 +1,17 @@
+# Variante conforme au schéma de Snapcast 0.26.0. Relire l'aide de la version installée.
+[server]
+datadir = @RUN_DIR@/state
+
+[http]
+enabled = false
+
+[tcp]
+enabled = true
+bind_to_address = 127.0.0.1
+port = 17105
+
+[stream]
+bind_to_address = 127.0.0.1
+port = 17104
+source = pipe://@RUN_DIR@/music.fifo?name=Music&mode=read&sampleformat=48000:16:2&codec=pcm
+buffer = 1000
